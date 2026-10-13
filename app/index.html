@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventor's Journal</title>
+<link rel="icon" href="icon.png">
+<style>
+  /* ------------------------------------------------------------------
+     Typeface: Atkinson Hyperlegible (Braille Institute), designed for
+     maximum character distinction (I/l/1, O/0, b/d/p/q). Bundled locally
+     so the journal works offline. Falls back to Verdana / Segoe UI, both
+     designed for on-screen legibility and present on every Windows PC.
+     ------------------------------------------------------------------ */
+  @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap;
+    src: url("fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-style: italic; font-weight: 400; font-display: swap;
+    src: url("fonts/atkinson-hyperlegible-latin-400-italic.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap;
+    src: url("fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-style: italic; font-weight: 700; font-display: swap;
+    src: url("fonts/atkinson-hyperlegible-latin-700-italic.woff2") format("woff2"); }
+
+  /* ------------------------------------------------------------------
+     Colour: dark text on an off-white (cream) background rather than pure
+     black on pure white, which reduces glare (British Dyslexia Association
+     style guide). Every text colour below meets WCAG AAA (>= 7:1).
+     Dark theme uses off-white on charcoal, not pure white on pure black,
+     to avoid "halation" (glowing text) for readers with astigmatism.
+     ------------------------------------------------------------------ */
+  :root {
+    --bg: #FAF6EC;          /* page: warm cream */
+    --surface: #FFFDF7;     /* writing area */
+    --sidebar: #F1ECDF;
+    --text: #23211D;        /* 14.9:1 on --bg */
+    --text-muted: #45413B;  /*  9.3:1 on --bg */
+    --accent: #1C4E80;      /*  7.9:1 on --bg, deep blue */
+    --accent-text: #FFFFFF;
+    --border: #CFC7B5;
+    --focus: #B35900;
+    --selected: #EAE3D2;
+    --danger: #8A1C1C;
+    --font-size: 18px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1C1D20; --surface: #232428; --sidebar: #18191B;
+      --text: #E8E3D7; --text-muted: #C4BDB0; --accent: #9CC3F0; --accent-text: #10141A;
+      --border: #44464C; --focus: #F2A65A; --selected: #2C2E33; --danger: #F2A5A5;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1C1D20; --surface: #232428; --sidebar: #18191B;
+    --text: #E8E3D7; --text-muted: #C4BDB0; --accent: #9CC3F0; --accent-text: #10141A;
+    --border: #44464C; --focus: #F2A65A; --selected: #2C2E33; --danger: #F2A5A5;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Atkinson Hyperlegible", Verdana, "Segoe UI", Tahoma, sans-serif;
+    font-size: var(--font-size);
+    line-height: 1.5;            /* WCAG 1.4.12: at least 1.5x */
+    letter-spacing: 0.012em;     /* slightly open spacing aids word recognition */
+    word-spacing: 0.06em;
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "top top" "side main";
+  }
+  button, input, textarea, select { font: inherit; color: inherit; letter-spacing: inherit; }
+
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  header {
+    grid-area: top;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--sidebar);
+  }
+  header h1 { font-size: 1.15em; margin: 0 auto 0 0; font-weight: 700; }
+  .btn {
+    border: 1px solid var(--border); background: var(--surface);
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; min-height: 40px;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+  .btn.danger { color: var(--danger); }
+  .btn-group { display: flex; gap: 6px; align-items: center; }
+
+  /* ---------- sidebar ---------- */
+  aside {
+    grid-area: side;
+    border-right: 1px solid var(--border);
+    background: var(--sidebar);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .search { padding: 14px; }
+  .search input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 6px; background: var(--surface);
+  }
+  #entryList { list-style: none; margin: 0; padding: 0 8px 14px; overflow-y: auto; flex: 1; }
+  #entryList li button {
+    display: block; width: 100%; text-align: left; border: 0; background: none;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+  }
+  #entryList li button:hover { background: var(--selected); }
+  #entryList li button[aria-current="true"] { background: var(--selected); box-shadow: inset 4px 0 0 var(--accent); }
+  .entry-title { display: block; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .entry-date { display: block; font-size: 0.85em; color: var(--text-muted); }
+  .empty { color: var(--text-muted); padding: 10px 12px; }
+
+  /* ---------- editor ---------- */
+  main { grid-area: main; overflow-y: auto; min-height: 0; }
+  .page {
+    /* ~60-70 characters per line: the range most legibility studies favour */
+    max-width: 66ch;
+    margin: 0 auto;
+    padding: 32px 28px 64px;
+  }
+  .meta { color: var(--text-muted); font-size: 0.9em; margin-bottom: 6px; display: flex; gap: 16px; flex-wrap: wrap; }
+  #title {
+    width: 100%; font-size: 1.6em; font-weight: 700; line-height: 1.3;
+    border: 0; border-bottom: 2px solid var(--border); background: transparent;
+    padding: 4px 0 8px; margin-bottom: 20px;
+  }
+  #title:focus-visible { outline: none; border-bottom-color: var(--accent); }
+  #body {
+    width: 100%; min-height: 60vh; resize: vertical;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface);
+    padding: 18px 20px;
+    line-height: 1.6;
+    text-align: left;            /* never justified: uneven gaps hurt reading */
+  }
+  #body:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  ::placeholder { color: var(--text-muted); opacity: 1; }
+  .status { color: var(--text-muted); font-size: 0.85em; margin-top: 8px; min-height: 1.5em; }
+  .welcome { color: var(--text-muted); }
+  .welcome h2 { color: var(--text); }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 720px) {
+    body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; grid-template-areas: "top" "side" "main"; }
+    aside { max-height: 35vh; border-right: 0; border-bottom: 1px solid var(--border); }
+    .page { padding: 20px 16px 48px; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .btn, #entryList li button { transition: background .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Inventor's Journal</h1>
+    <button class="btn primary" id="newBtn" title="New entry (Ctrl+N)">+ New entry</button>
+    <div class="btn-group" role="group" aria-label="Text size">
+      <button class="btn" id="smallerBtn" title="Smaller text (Ctrl+-)" aria-label="Smaller text">A−</button>
+      <button class="btn" id="largerBtn" title="Larger text (Ctrl+=)" aria-label="Larger text">A+</button>
+    </div>
+    <label class="sr-only" for="themeSel">Colour theme</label>
+    <select class="btn" id="themeSel" title="Colour theme">
+      <option value="system">Theme: match Windows</option>
+      <option value="light">Theme: light</option>
+      <option value="dark">Theme: dark</option>
+    </select>
+    <button class="btn" id="exportBtn" title="Save a backup copy of every entry">Back up</button>
+    <button class="btn" id="importBtn" title="Restore entries from a backup file">Restore</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </header>
+
+  <aside aria-label="Entries">
+    <div class="search">
+      <label class="sr-only" for="search">Search entries</label>
+      <input type="search" id="search" placeholder="Search entries…">
+    </div>
+    <ul id="entryList"></ul>
+  </aside>
+
+  <main>
+    <div class="page" id="page"></div>
+  </main>
+
+<script>
+(() => {
+  "use strict";
+  const STORE = "inventorsJournal.entries.v1";
+  const PREFS = "inventorsJournal.prefs.v1";
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- storage ----------
+  const safeGet = (k, fallback) => {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+  };
+  const safeSet = (k, v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; }
+  };
+  let entries = safeGet(STORE, []);
+  let prefs = Object.assign({ fontSize: 18, theme: "system" }, safeGet(PREFS, {}));
+  let currentId = null;
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+  const save = () => {
+    const ok = safeSet(STORE, entries);
+    setStatus(ok ? "Saved " + timeFmt.format(new Date()) : "Could not save — use Back up to keep a copy!");
+  };
+
+  // ---------- formatting ----------
+  const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const shortFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+  const setStatus = (msg) => { const s = $("status"); if (s) s.textContent = msg; };
+
+  // ---------- preferences ----------
+  const applyPrefs = () => {
+    document.documentElement.style.setProperty("--font-size", prefs.fontSize + "px");
+    if (prefs.theme === "system") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", prefs.theme);
+    $("themeSel").value = prefs.theme;
+    safeSet(PREFS, prefs);
+  };
+  const changeSize = (d) => { prefs.fontSize = Math.min(30, Math.max(14, prefs.fontSize + d)); applyPrefs(); };
+
+  // ---------- list ----------
+  const renderList = () => {
+    const q = $("search").value.trim().toLowerCase();
+    const list = $("entryList");
+    list.textContent = "";
+    const shown = entries
+      .filter(e => !q || (e.title + "\n" + e.body).toLowerCase().includes(q))
+      .sort((a, b) => b.created - a.created);
+    if (!shown.length) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = q ? "No entries match." : "No entries yet.";
+      list.appendChild(li);
+      return;
+    }
+    for (const e of shown) {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.setAttribute("aria-current", e.id === currentId ? "true" : "false");
+      const t = document.createElement("span"); t.className = "entry-title"; t.textContent = e.title || "Untitled";
+      const d = document.createElement("span"); d.className = "entry-date"; d.textContent = shortFmt.format(e.created);
+      b.append(t, d);
+      b.addEventListener("click", () => open(e.id));
+      li.appendChild(b);
+      list.appendChild(li);
+    }
+  };
+
+  // ---------- editor ----------
+  const showWelcome = () => {
+    currentId = null;
+    $("page").innerHTML =
+      '<div class="welcome"><h2>Welcome to your journal</h2>' +
+      '<p>Press <strong>+ New entry</strong> (or Ctrl+N) to record an idea, sketch out a design, or log an experiment. ' +
+      'Every entry is dated automatically and saved as you type.</p>' +
+      '<p>Use <strong>Back up</strong> now and then to save a copy of everything to a file you can keep safe.</p></div>';
+    renderList();
+  };
+
+  const open = (id) => {
+    const e = entries.find(x => x.id === id);
+    if (!e) return showWelcome();
+    currentId = id;
+    const page = $("page");
+    page.innerHTML =
+      '<div class="meta"><span id="created"></span><span id="edited"></span></div>' +
+      '<label class="sr-only" for="title">Title</label>' +
+      '<input id="title" placeholder="Title" autocomplete="off">' +
+      '<label class="sr-only" for="body">Entry</label>' +
+      '<textarea id="body" placeholder="What are you working on today?" spellcheck="true"></textarea>' +
+      '<div class="status" id="status" role="status" aria-live="polite"></div>' +
+      '<div class="btn-group" style="margin-top:12px">' +
+      '<button class="btn" id="txtBtn">Save as text file</button>' +
+      '<button class="btn danger" id="delBtn">Delete entry</button></div>';
+    $("created").textContent = "Created " + dateFmt.format(e.created) + ", " + timeFmt.format(e.created);
+    const showEdited = () => { $("edited").textContent = e.updated !== e.created ? "Edited " + shortFmt.format(e.updated) + ", " + timeFmt.format(e.updated) : ""; };
+    showEdited();
+    $("title").value = e.title;
+    $("body").value = e.body;
+    let timer;
+    const onInput = () => {
+      e.title = $("title").value;
+      e.body = $("body").value;
+      e.updated = Date.now();
+      setStatus("Saving…");
+      clearTimeout(timer);
+      timer = setTimeout(() => { save(); showEdited(); renderList(); }, 400);
+    };
+    $("title").addEventListener("input", onInput);
+    $("body").addEventListener("input", onInput);
+    $("title").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); $("body").focus(); } });
+    $("delBtn").addEventListener("click", () => {
+      if (!confirm('Delete "' + (e.title || "Untitled") + '"? This cannot be undone.')) return;
+      entries = entries.filter(x => x.id !== e.id);
+      save();
+      showWelcome();
+    });
+    $("txtBtn").addEventListener("click", () => {
+      const text = (e.title || "Untitled") + "\n" + dateFmt.format(e.created) + "\n\n" + e.body + "\n";
+      download(text, slug(e.title || "entry") + "-" + isoDate(e.created) + ".txt", "text/plain");
+    });
+    renderList();
+    (e.title ? $("body") : $("title")).focus();
+  };
+
+  const newEntry = () => {
+    const now = Date.now();
+    const e = { id: now.toString(36) + Math.random().toString(36).slice(2, 7), title: "", body: "", created: now, updated: now };
+    entries.push(e);
+    save();
+    $("search").value = "";
+    open(e.id);
+  };
+
+  // ---------- backup / restore ----------
+  const isoDate = (t) => new Date(t).toISOString().slice(0, 10);
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "entry";
+  const download = (text, name, type) => {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const exportAll = () => {
+    download(JSON.stringify({ app: "InventorsJournal", version: 1, exported: Date.now(), entries }, null, 2),
+      "inventors-journal-backup-" + isoDate(Date.now()) + ".json", "application/json");
+  };
+  const importAll = async (file) => {
+    try {
+      const data = JSON.parse(await file.text());
+      const incoming = Array.isArray(data) ? data : data.entries;
+      if (!Array.isArray(incoming)) throw new Error("not a journal backup");
+      const byId = new Map(entries.map(e => [e.id, e]));
+      let added = 0;
+      for (const e of incoming) {
+        if (!e || typeof e.id !== "string" || typeof e.created !== "number") continue;
+        const clean = { id: e.id, title: String(e.title || ""), body: String(e.body || ""), created: e.created, updated: Number(e.updated) || e.created };
+        const prev = byId.get(clean.id);
+        if (!prev) added++;
+        if (!prev || clean.updated > prev.updated) byId.set(clean.id, clean);
+      }
+      entries = [...byId.values()];
+      save();
+      renderList();
+      alert("Restore complete. " + added + " new entr" + (added === 1 ? "y" : "ies") + " added.");
+    } catch (err) {
+      alert("Sorry, that file could not be restored (" + err.message + ").");
+    }
+  };
+
+  // ---------- wiring ----------
+  $("newBtn").addEventListener("click", newEntry);
+  $("smallerBtn").addEventListener("click", () => changeSize(-2));
+  $("largerBtn").addEventListener("click", () => changeSize(2));
+  $("themeSel").addEventListener("change", (ev) => { prefs.theme = ev.target.value; applyPrefs(); });
+  $("search").addEventListener("input", renderList);
+  $("exportBtn").addEventListener("click", exportAll);
+  $("importBtn").addEventListener("click", () => $("importFile").click());
+  $("importFile").addEventListener("change", (ev) => { const f = ev.target.files[0]; if (f) importAll(f); ev.target.value = ""; });
+  document.addEventListener("keydown", (ev) => {
+    if (!ev.ctrlKey) return;
+    if (ev.key === "n" || ev.key === "N") { ev.preventDefault(); newEntry(); }
+    else if (ev.key === "=" || ev.key === "+") { ev.preventDefault(); changeSize(2); }
+    else if (ev.key === "-") { ev.preventDefault(); changeSize(-2); }
+    else if (ev.key === "f" || ev.key === "F") { ev.preventDefault(); $("search").focus(); }
+  });
+
+  applyPrefs();
+  const latest = [...entries].sort((a, b) => b.created - a.created)[0];
+  latest ? open(latest.id) : showWelcome();
+})();
+</script>
+</body>
+</html>
