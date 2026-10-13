@@ -5,7 +5,7 @@ $root = Join-Path $env:LOCALAPPDATA 'InventorsJournal'
 Remove-Item -ErrorAction SilentlyContinue `
     (Join-Path ([Environment]::GetFolderPath('Desktop')) $name), `
     (Join-Path ([Environment]::GetFolderPath('Programs')) $name)
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $root 'app')
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $root 'app'), (Join-Path $root 'launcher')
 Write-Host 'Shortcuts and app removed.'
 $answer = Read-Host 'Also permanently delete ALL journal entries? Type YES to confirm, or press Enter to keep them'
 if ($answer -ceq 'YES') {

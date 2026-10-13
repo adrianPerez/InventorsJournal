@@ -13,12 +13,18 @@ Its typeface and colours follow published readability and legibility research
    - If Windows SmartScreen warns you, choose **More info**, then **Run anyway**.
 3. An **Inventor's Journal** icon appears on your desktop and in the Start menu.
    To pin it to the taskbar, right-click the icon and choose **Pin to taskbar**
-   (on Windows 11, choose **Show more options** first).
+   (on Windows 11, choose **Show more options** first). You can also
+   right-click the journal's button on the taskbar while it is open and pin it
+   from there. Either way, the pinned icon stays the journal icon.
 
 The journal opens in its own window. It uses Microsoft Edge, which comes with
 Windows, in "app mode", so there is no address bar or tabs. If Edge is
 missing, the installer uses Chrome, and if neither is installed it uses your
 default browser.
+
+If you pinned the journal with an older version and the pin shows the Edge
+icon, right-click that pin, choose **Unpin from taskbar**, run `Install.bat`
+again, and pin it again.
 
 To update the app later, download the new version and run `Install.bat`
 again. Your entries are kept. To remove the app, run `Uninstall.bat`. It asks
@@ -64,6 +70,7 @@ or a USB stick.
 
 ```
 app/                 The journal itself (one HTML file, bundled fonts, icon)
+launcher/            Opens the journal and gives its window its own taskbar icon
 Install.bat          Double-click installer (runs Install-Journal.ps1)
 Uninstall.bat        Double-click uninstaller (runs Uninstall-Journal.ps1)
 tools/make_icon.py   Regenerates app/icon.ico (requires Pillow)
