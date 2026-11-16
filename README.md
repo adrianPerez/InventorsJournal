@@ -34,22 +34,23 @@ before deleting any entries.
 
 | Action | How |
 | --- | --- |
-| Switch journal | Click the **Inventor's Journal** or **YouTube Maker Video Creator** tab (or use the arrow keys on a focused tab) |
-| New entry | **+ New entry** or `Ctrl+N` (adds to the journal whose tab is open) |
+| Switch journal | **⇄ Switch** in the top bar, next to the journal name, or `Ctrl+J` |
+| New entry | **+ New entry** or `Ctrl+N` (adds to the journal you are in) |
 | Search | Type in the search box or press `Ctrl+F` |
 | Bigger / smaller text | **A+** / **A−** or `Ctrl+=` / `Ctrl+-` |
 | Light / dark theme | Theme menu (it follows the Windows setting by default) |
-| Plan a video | In the YouTube tab, **Insert video outline** adds headings for the idea, hook, build steps, shot list, title and thumbnail ideas, and a publishing checklist |
+| Plan a video | In the YouTube journal, **Insert video outline** adds headings for the idea, hook, build steps, shot list, title and thumbnail ideas, and a publishing checklist |
 | Back up everything | **Back up** saves both journals to one `.json` file in your Downloads folder |
-| Restore a backup | **Restore**, then pick the `.json` file. It merges with your existing entries. Backups made before the tabs existed go into the Inventor's Journal |
+| Restore a backup | **Restore**, then pick the `.json` file. It merges with your existing entries. Backups made before the YouTube journal existed go into the Inventor's Journal |
 | Export one entry | **Save as text file** |
 
 Each entry is dated when you create it and saved automatically as you type.
 
-The app holds two separate journals, each on its own tab: the
-**Inventor's Journal** and the **YouTube Maker Video Creator** journal. Each
-has its own entries and its own search, and the app reopens on the tab you
-used last.
+The app holds two separate journals: the **Inventor's Journal** and the
+**YouTube Maker Video Creator** journal. The name of the one you are in is
+shown at the top left, and the **⇄ Switch** button next to it swaps to
+the other. Each journal has its own entries and its own search, and the app
+reopens on the journal you used last.
 
 **Where are my entries?** They are stored on your PC in
 `%LOCALAPPDATA%\InventorsJournal\data`. Nothing is sent over the internet.

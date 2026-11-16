@@ -70,8 +70,8 @@
     word-spacing: 0.06em;
     display: grid;
     grid-template-columns: minmax(240px, 320px) 1fr;
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas: "top top" "tabs tabs" "side main";
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "top top" "side main";
   }
   button, input, textarea, select { font: inherit; color: inherit; letter-spacing: inherit; }
 
@@ -85,7 +85,8 @@
     border-bottom: 1px solid var(--border);
     background: var(--sidebar);
   }
-  header h1 { font-size: 1.15em; margin: 0 auto 0 0; font-weight: 700; }
+  header h1 { font-size: 1.15em; margin: 0; font-weight: 700; }
+  .journal { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-right: auto; }
   .btn {
     border: 1px solid var(--border); background: var(--surface);
     padding: 6px 14px; border-radius: 6px; cursor: pointer; min-height: 40px;
@@ -94,25 +95,6 @@
   .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
   .btn.danger { color: var(--danger); }
   .btn-group { display: flex; gap: 6px; align-items: center; }
-
-  /* ---------- journal tabs ---------- */
-  .tabs {
-    grid-area: tabs;
-    display: flex; gap: 4px; flex-wrap: wrap;
-    padding: 8px 20px 0;
-    background: var(--sidebar);
-    border-bottom: 1px solid var(--border);
-  }
-  .tab {
-    border: 1px solid transparent; border-bottom: 0; background: none;
-    padding: 8px 18px; border-radius: 8px 8px 0 0; cursor: pointer; min-height: 44px;
-    margin-bottom: -1px; color: var(--text-muted);
-  }
-  .tab:hover { color: var(--text); background: var(--selected); }
-  .tab[aria-selected="true"] {
-    color: var(--text); font-weight: 700; background: var(--bg);
-    border-color: var(--border); box-shadow: inset 0 4px 0 var(--accent);
-  }
 
   /* ---------- sidebar ---------- */
   aside {
@@ -169,17 +151,19 @@
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   @media (max-width: 720px) {
-    body { grid-template-columns: 1fr; grid-template-rows: auto auto auto 1fr; grid-template-areas: "top" "tabs" "side" "main"; }
-    .tabs { padding: 8px 16px 0; }
+    body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; grid-template-areas: "top" "side" "main"; }
     aside { max-height: 35vh; border-right: 0; border-bottom: 1px solid var(--border); }
     .page { padding: 20px 16px 48px; }
   }
-  @media (prefers-reduced-motion: no-preference) { .btn, .tab, #entryList li button { transition: background .15s, border-color .15s; } }
+  @media (prefers-reduced-motion: no-preference) { .btn, #entryList li button { transition: background .15s, border-color .15s; } }
 </style>
 </head>
 <body>
   <header>
-    <h1>Inventor's Journal</h1>
+    <div class="journal">
+      <h1 id="journalName">Inventor's Journal</h1>
+      <button class="btn" id="switchBtn">⇄ Switch</button>
+    </div>
     <button class="btn primary" id="newBtn" title="New entry (Ctrl+N)">+ New entry</button>
     <div class="btn-group" role="group" aria-label="Text size">
       <button class="btn" id="smallerBtn" title="Smaller text (Ctrl+-)" aria-label="Smaller text">A−</button>
@@ -196,10 +180,7 @@
     <input type="file" id="importFile" accept=".json,application/json" hidden>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Journals" id="tabs">
-    <button class="tab" role="tab" id="tab-inventor" data-journal="inventor" aria-controls="journalPanel">Inventor's Journal</button>
-    <button class="tab" role="tab" id="tab-youtube" data-journal="youtube" aria-controls="journalPanel">YouTube Maker Video Creator</button>
-  </nav>
+  <div class="sr-only" id="announce" role="status" aria-live="polite"></div>
 
   <aside aria-label="Entries" id="journalPanel">
     <div class="search">
@@ -220,7 +201,7 @@
   const $ = (id) => document.getElementById(id);
 
   // ---------- journals ----------
-  // Each tab is a separate journal with its own entries. The Inventor's
+  // Each is a separate journal with its own entries. The Inventor's
   // Journal keeps the original storage key so existing entries are untouched.
   const VIDEO_OUTLINE =
     "VIDEO IDEA\n\n\n" +
@@ -298,16 +279,15 @@
   };
   const changeSize = (d) => { prefs.fontSize = Math.min(30, Math.max(14, prefs.fontSize + d)); applyPrefs(); };
 
-  // ---------- tabs ----------
-  const tabs = [...document.querySelectorAll('#tabs [role="tab"]')];
-  const renderTabs = () => {
-    for (const t of tabs) {
-      const on = t.dataset.journal === journal;
-      t.setAttribute("aria-selected", on ? "true" : "false");
-      t.tabIndex = on ? 0 : -1;
-    }
-    $("journalPanel").setAttribute("aria-labelledby", "tab-" + journal);
-    $("search").placeholder = "Search " + JOURNALS[journal].name + "…";
+  // ---------- journal switching ----------
+  const otherJournal = () => Object.keys(JOURNALS).find(k => k !== journal);
+  const renderJournal = () => {
+    const name = JOURNALS[journal].name, other = JOURNALS[otherJournal()].name;
+    $("journalName").textContent = name;
+    $("switchBtn").title = "Switch to " + other + " (Ctrl+J)";
+    $("switchBtn").setAttribute("aria-label", "Switch to " + other);
+    $("journalPanel").setAttribute("aria-label", "Entries in " + name);
+    $("search").placeholder = "Search " + name + "…";
   };
   const switchJournal = (key) => {
     if (!JOURNALS[key] || key === journal) return;
@@ -317,24 +297,11 @@
     prefs.journal = key;
     applyPrefs();
     $("search").value = "";
-    renderTabs();
+    renderJournal();
     openDefault(false);
+    setTimeout(() => announce("Now showing " + JOURNALS[key].name), 50);
   };
-  for (const t of tabs) {
-    t.addEventListener("click", () => switchJournal(t.dataset.journal));
-    t.addEventListener("keydown", (ev) => {
-      const i = tabs.indexOf(t);
-      let next = null;
-      if (ev.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
-      else if (ev.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
-      else if (ev.key === "Home") next = tabs[0];
-      else if (ev.key === "End") next = tabs[tabs.length - 1];
-      if (!next) return;
-      ev.preventDefault();
-      switchJournal(next.dataset.journal);
-      next.focus();
-    });
-  }
+  const announce = (msg) => { const a = $("announce"); a.textContent = ""; a.textContent = msg; };
 
   // ---------- list ----------
   const renderList = () => {
@@ -487,7 +454,7 @@
         for (const key in JOURNALS) if (Array.isArray(parsed.journals[key])) sets[key] = parsed.journals[key];
       } else {
         const legacy = Array.isArray(parsed) ? parsed : parsed && parsed.entries;
-        if (Array.isArray(legacy)) sets.inventor = legacy;   // backups from before tabs
+        if (Array.isArray(legacy)) sets.inventor = legacy;   // backups from before the YouTube journal
       }
       if (!Object.keys(sets).length) throw new Error("not a journal backup");
       const report = [];
@@ -505,6 +472,7 @@
 
   // ---------- wiring ----------
   $("newBtn").addEventListener("click", newEntry);
+  $("switchBtn").addEventListener("click", () => switchJournal(otherJournal()));
   $("smallerBtn").addEventListener("click", () => changeSize(-2));
   $("largerBtn").addEventListener("click", () => changeSize(2));
   $("themeSel").addEventListener("change", (ev) => { prefs.theme = ev.target.value; applyPrefs(); });
@@ -518,10 +486,11 @@
     else if (ev.key === "=" || ev.key === "+") { ev.preventDefault(); changeSize(2); }
     else if (ev.key === "-") { ev.preventDefault(); changeSize(-2); }
     else if (ev.key === "f" || ev.key === "F") { ev.preventDefault(); $("search").focus(); }
+    else if (ev.key === "j" || ev.key === "J") { ev.preventDefault(); switchJournal(otherJournal()); }
   });
 
   applyPrefs();
-  renderTabs();
+  renderJournal();
   openDefault(true);
 })();
 </script>
