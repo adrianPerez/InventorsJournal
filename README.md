@@ -39,15 +39,15 @@ before deleting any entries.
 | Search | Type in the search box or press `Ctrl+F` |
 | Bigger / smaller text | **A+** / **A−** or `Ctrl+=` / `Ctrl+-` |
 | Light / dark theme | Theme menu (it follows the Windows setting by default) |
-| Plan a video | In the YouTube journal, **Insert video outline** adds headings for the idea, hook, build steps, shot list, title and thumbnail ideas, and a publishing checklist |
+| Plan a video | In the Video Production Journal, **Insert video outline** adds headings for the idea, hook, build steps, shot list, title and thumbnail ideas, and a publishing checklist |
 | Back up everything | **Back up** saves both journals to one `.json` file in your Downloads folder |
-| Restore a backup | **Restore**, then pick the `.json` file. It merges with your existing entries. Backups made before the YouTube journal existed go into the Inventor's Journal |
+| Restore a backup | **Restore**, then pick the `.json` file. It merges with your existing entries. Backups made before the Video Production Journal existed go into the Inventor's Journal |
 | Export one entry | **Save as text file** |
 
 Each entry is dated when you create it and saved automatically as you type.
 
 The app holds two separate journals: the **Inventor's Journal** and the
-**YouTube Maker Video Creator** journal. The name of the one you are in is
+**Video Production Journal**. The name of the one you are in is
 shown at the top left, and the **⇄ Switch** button next to it swaps to
 the other. Each journal has its own entries and its own search, and the app
 reopens on the journal you used last.

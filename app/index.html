@@ -227,11 +227,11 @@
         '<p>Use <strong>Back up</strong> now and then to save a copy of everything to a file you can keep safe.</p></div>'
     },
     youtube: {
-      name: "YouTube Maker Video Creator",
+      name: "Video Production Journal",
       store: "inventorsJournal.youtube.entries.v1",
       placeholder: "What video are you planning, filming or editing?",
       welcome:
-        '<div class="welcome"><h2>YouTube Maker Video Creator</h2>' +
+        '<div class="welcome"><h2>Video Production Journal</h2>' +
         '<p>This is a separate journal for your maker videos. Its entries are kept apart from your Inventor\'s Journal.</p>' +
         '<p>Press <strong>+ New entry</strong> (or Ctrl+N) to plan a video: the idea, the hook, the build steps, ' +
         'the shot list, and title and thumbnail ideas. <strong>Insert video outline</strong> fills in those headings for you.</p>' +
@@ -454,7 +454,7 @@
         for (const key in JOURNALS) if (Array.isArray(parsed.journals[key])) sets[key] = parsed.journals[key];
       } else {
         const legacy = Array.isArray(parsed) ? parsed : parsed && parsed.entries;
-        if (Array.isArray(legacy)) sets.inventor = legacy;   // backups from before the YouTube journal
+        if (Array.isArray(legacy)) sets.inventor = legacy;   // backups from before the Video Production Journal
       }
       if (!Object.keys(sets).length) throw new Error("not a journal backup");
       const report = [];
